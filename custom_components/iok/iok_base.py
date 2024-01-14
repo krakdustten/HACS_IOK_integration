@@ -15,12 +15,7 @@ class IokBase:
         self.city = city
         self.street = street
 
-        self.this_year = 0
-        self.this_month = 0
-        self.next_month_year = 0
-        self.next_month = 0
-        self.this_month_data = {}
-        self.next_month_data = {}
+        self.data = []
 
     async def test_connection(self) -> bool:
         _LOGGER.info(
@@ -39,20 +34,28 @@ class IokBase:
 
     async def update_data_from_api(self):
         today = datetime.date.today()
-        self.this_year = today.year
-        self.this_month = today.month
-        self.next_month_year = (
-            self.this_year if self.this_month < 12 else self.this_year + 1
-        )
-        self.next_month = self.this_month + 1 if self.this_month < 12 else 1
+        year = today.year
+        month = today.month
         try:
             ses = await _open_sesion(self.city, self.street)
-            self.this_month_data = await _get_month(
-                ses, self.this_year, self.this_month
-            )
-            self.next_month_data = await _get_month(
-                ses, self.next_month_year, self.next_month
-            )
+            data = []
+            for i in range(12):
+                m = month + i
+                y = year
+                if m > 12:
+                    y = year + 1
+                    m = m - 12
+                days = await _get_month(ses, y, m)
+                for day in days:
+                    d = days[day]
+                    if len(d) > 0:
+                        data.append((
+                            datetime.datetime(y, m, day).date(),
+                            d
+                        ))
+
+            self.data = data
+
             await ses.close()
         except Exception as e:
             _LOGGER.info("ERROR %s", str(e))

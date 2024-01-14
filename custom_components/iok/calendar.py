@@ -62,30 +62,15 @@ class IOKCalendar(CoordinatorEntity, CalendarEntity):
     def get_all_events(self, start_date: datetime.date, end_date: datetime.date):
         events: List[CalendarEvent] = []
         base = self.coordinator.iok_base
-        for day in base.this_month_data:
-            date = datetime.datetime(base.this_year, base.this_month, day)
-            if start_date > date.date() > end_date:
+        for event in base.data:
+            date, waste = event
+            if start_date > date > end_date:
                 continue
-            if len(base.this_month_data[day]) > 0:
-                events.append(
-                    CalendarEvent(
-                        summary=", ".join(base.this_month_data[day]),
-                        start=date.date(),
-                        end=date.date() + timedelta(days=1),
-                    )
+            events.append(
+                CalendarEvent(
+                    summary=", ".join(waste), start=date, end=date + timedelta(days=1)
                 )
-        for day in base.next_month_data:
-            date = datetime.datetime(base.next_month_year, base.next_month, day)
-            if start_date > date.date() > end_date:
-                continue
-            if len(base.next_month_data[day]) > 0:
-                events.append(
-                    CalendarEvent(
-                        summary=", ".join(base.next_month_data[day]),
-                        start=date.date(),
-                        end=date.date() + timedelta(days=1),
-                    )
-                )
+            )
         return events
 
     @callback
