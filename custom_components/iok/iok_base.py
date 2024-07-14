@@ -126,7 +126,7 @@ async def _get_month(
     )
     base_site_dom = BeautifulSoup(await base_site.text(), features="html.parser")
 
-    ioktable = base_site_dom.find("div", {"class": "iokcalendar"}).div.table
+    ioktable = base_site_dom.find("div", {"class": "iokcalendar"}).div.table.tbody
     for row in ioktable.contents:
         if not row.name == "tr":
             continue
@@ -138,7 +138,7 @@ async def _get_month(
                 and "weekend" not in col.attrs["class"]
             ):
                 continue
-            day = int(col.contents[0].text)
+            day = int(col.contents[0].contents[0].text)
             waste = []
             for wd in col.contents[1:]:
                 waste.append(wd.a.text)
