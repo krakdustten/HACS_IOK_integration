@@ -126,7 +126,9 @@ async def _get_month(
     )
     base_site_dom = BeautifulSoup(await base_site.text(), features="html.parser")
 
-    ioktable = base_site_dom.find("div", {"class": "iokcalendar"}).div.table.tbody
+    ioktable = base_site_dom.find("div", {"class": "iokcalendar"}).div.table
+    if ioktable.tbody is not None:
+        ioktable = ioktable.tbody
     for row in ioktable.contents:
         if not row.name == "tr":
             continue
